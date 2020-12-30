@@ -34,7 +34,7 @@ public class Game {
         }else if(playerAScore >= 4 && playerAScore >= playerBScore + 1) {
             return "Advantage Player A";
         }else if(playerBScore >= 4 && playerBScore >= playerAScore + 1) {
-            return "Advantage Player A";
+            return "Advantage Player B";
         } else if(playerAScore == playerBScore) {
             return translate(playerAScore) + " All";
         }

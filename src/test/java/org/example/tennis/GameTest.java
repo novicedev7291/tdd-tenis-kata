@@ -41,8 +41,10 @@ class GameTest {
             "AA,BBBB,Player B wins",
             "AAA,BBBBB,Player B wins",
             "AAA,BBB,Deuce",
+            "AAAA,BBBB,Deuce",
             "AAA,BB,forty:thirty",
-            "AAAA,BBB,Advantage Player A"
+            "AAAA,BBB,Advantage Player A",
+            "AAAA,BBBBB,Advantage Player B"
     })
     void testExpectedGameResultGivenScoringPatterns(String playerAScores, String playerBScores, String expected) {
         game.apply(playerAScores, playerBScores);
