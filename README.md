@@ -1,2 +1,2 @@
 # tdd-tenis-kata
-[Tenis kata](http://codingdojo.org/?KataTennis) using TDD approach
+[Tenis kata](https://codingdojo.org/kata/Tennis/) using TDD approach
