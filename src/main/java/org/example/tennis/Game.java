@@ -1,19 +1,38 @@
 package org.example.tennis;
 
-import lombok.RequiredArgsConstructor;
+import io.vavr.control.Either;
+import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
-import static lombok.AccessLevel.PRIVATE;
+import static org.example.tennis.Rules.bothPlayerHaveSameScore;
+import static org.example.tennis.Rules.defaultScoring;
+import static org.example.tennis.Rules.deuceInMatch;
+import static org.example.tennis.Rules.onePlayerHasAdvantage;
+import static org.example.tennis.Rules.onePlayerWinsTheMatch;
 
 /**
  * @author <a href="kuldeepyadav7291@gmail.com">Kuldeep</a>
  */
-@RequiredArgsConstructor(access = PRIVATE)
+@Getter
 public class Game {
     private final Player playerA;
     private final Player playerB;
+    private final List<Rules> rules = new ArrayList<>(5);
+
+    private Game(Player playerA, Player playerB) {
+        this.playerA = playerA;
+        this.playerB = playerB;
+
+        rules.add(onePlayerWinsTheMatch);
+        rules.add(deuceInMatch);
+        rules.add(onePlayerHasAdvantage);
+        rules.add(bothPlayerHaveSameScore);
+        rules.add(defaultScoring);
+    }
 
     public static Game startWith(Player playerA, Player playerB) {
         Objects.requireNonNull(playerA, "Players cannot be null");
@@ -22,35 +41,22 @@ public class Game {
     }
 
     public String result() {
-        int playerAScore = playerA.getScore();
-        int playerBScore = playerB.getScore();
+        Score playerAScore = playerA.getScore();
+        Score playerBScore = playerB.getScore();
 
-        if(playerAScore >= 4 && playerAScore >= playerBScore + 2) {
-            return "Player A wins";
-        }else if(playerBScore >= 4 && playerBScore >= playerAScore + 2) {
-            return "Player B wins";
-        }else if(playerAScore == playerBScore && playerAScore >= 3) {
-            return "Deuce";
-        }else if(playerAScore >= 4 && playerAScore >= playerBScore + 1) {
-            return "Advantage Player A";
-        }else if(playerBScore >= 4 && playerBScore >= playerAScore + 1) {
-            return "Advantage Player B";
-        } else if(playerAScore == playerBScore) {
-            return translate(playerAScore) + " All";
-        }
+        RuleEngine engine = RuleEngine.applyTo(this)
+                .first(onePlayerWinsTheMatch)
+                .next(deuceInMatch)
+                .next(onePlayerHasAdvantage)
+                .next(bothPlayerHaveSameScore)
+                .last(defaultScoring);
 
-        return translate(playerAScore) + ":" + translate(playerBScore);
+
+
+        return "";
     }
 
-    private String translate(int score) {
-        switch (score) {
-            case 0: return "love";
-            case 1: return "fifteen";
-            case 2: return "thirty";
-            case 3: return "forty";
-            default: throw new IllegalStateException("Unknown scoring point");
-        }
-    }
+
 
     public void apply(String playerAScores, String playerBScores) {
         int timesPlayerAScored = calculateScore(playerAScores);

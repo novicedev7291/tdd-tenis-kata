@@ -11,13 +11,14 @@ import static lombok.AccessLevel.PRIVATE;
 @Getter
 @AllArgsConstructor(access = PRIVATE)
 public class Player {
-    private int score;
+    private final String title;
+    private Score score;
 
-    public static Player create() {
-        return new Player(0);
+    public static Player create(String title) {
+        return new Player(title, Score.of(0));
     }
 
     public void winsTheBall() {
-        score++;
+        score = score.increment();
     }
 }
