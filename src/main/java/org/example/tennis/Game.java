@@ -1,19 +1,34 @@
 package org.example.tennis;
 
-import lombok.RequiredArgsConstructor;
+import io.vavr.control.Either;
+import lombok.Getter;
 
 import java.util.Objects;
 import java.util.stream.IntStream;
 
-import static lombok.AccessLevel.PRIVATE;
+import static io.vavr.API.$;
+import static io.vavr.API.Case;
+import static io.vavr.API.Match;
+import static io.vavr.Patterns.$Left;
+import static io.vavr.Patterns.$Right;
+import static org.example.tennis.Rules.bothPlayerHaveSameScore;
+import static org.example.tennis.Rules.defaultScoring;
+import static org.example.tennis.Rules.deuceInMatch;
+import static org.example.tennis.Rules.onePlayerHasAdvantage;
+import static org.example.tennis.Rules.onePlayerWinsTheMatch;
 
 /**
  * @author <a href="kuldeepyadav7291@gmail.com">Kuldeep</a>
  */
-@RequiredArgsConstructor(access = PRIVATE)
+@Getter
 public class Game {
     private final Player playerA;
     private final Player playerB;
+
+    private Game(Player playerA, Player playerB) {
+        this.playerA = playerA;
+        this.playerB = playerB;
+    }
 
     public static Game startWith(Player playerA, Player playerB) {
         Objects.requireNonNull(playerA, "Players cannot be null");
@@ -22,35 +37,19 @@ public class Game {
     }
 
     public String result() {
-        int playerAScore = playerA.getScore();
-        int playerBScore = playerB.getScore();
+        final Rules rules = onePlayerWinsTheMatch.appendNext(deuceInMatch)
+                                                 .appendNext(onePlayerHasAdvantage)
+                                                 .appendNext(bothPlayerHaveSameScore)
+                                                 .appendNext(defaultScoring);
 
-        if(playerAScore >= 4 && playerAScore >= playerBScore + 2) {
-            return "Player A wins";
-        }else if(playerBScore >= 4 && playerBScore >= playerAScore + 2) {
-            return "Player B wins";
-        }else if(playerAScore == playerBScore && playerAScore >= 3) {
-            return "Deuce";
-        }else if(playerAScore >= 4 && playerAScore >= playerBScore + 1) {
-            return "Advantage Player A";
-        }else if(playerBScore >= 4 && playerBScore >= playerAScore + 1) {
-            return "Advantage Player B";
-        } else if(playerAScore == playerBScore) {
-            return translate(playerAScore) + " All";
-        }
+        final Either<RuleNotApplicable, RuleApplied> result = rules.apply(playerA, playerB);
 
-        return translate(playerAScore) + ":" + translate(playerBScore);
+        return Match(result).of(
+                Case($Left($()), ruleNotApplied -> "Could not determine result"),
+                Case($Right($()), RuleApplied::getResult)
+        );
     }
 
-    private String translate(int score) {
-        switch (score) {
-            case 0: return "love";
-            case 1: return "fifteen";
-            case 2: return "thirty";
-            case 3: return "forty";
-            default: throw new IllegalStateException("Unknown scoring point");
-        }
-    }
 
     public void apply(String playerAScores, String playerBScores) {
         int timesPlayerAScored = calculateScore(playerAScores);

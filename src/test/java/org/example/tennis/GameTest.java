@@ -10,8 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author <a href="kuldeepyadav7291@gmail.com">Kuldeep</a>
  */
 class GameTest {
-    private final Player playerA = Player.create();
-    private final Player playerB = Player.create();
+    private final Player playerA = Player.create("A");
+    private final Player playerB = Player.create("B");
 
     private final Game game = Game.startWith(playerA, playerB);
 
