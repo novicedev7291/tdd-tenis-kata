@@ -2,15 +2,26 @@ package org.example.tennis;
 
 import io.vavr.control.Either;
 
-import java.util.function.BiFunction;
-
 import static org.example.tennis.EitherResult.announceFailure;
 import static org.example.tennis.EitherResult.announceSuccess;
 
 /**
  * @author <a href="kuldeepyadav7291@gmail.com">Kuldeep</a>
  */
-interface Rules extends BiFunction<Player, Player, Either<RuleNotApplicable, RuleApplied>> {
+interface Rules {
+    Either<RuleNotApplicable, RuleApplied> apply(Player playerA, Player playerB);
+
+    default Rules appendNext(Rules nextRule) {
+        return (playerA, playerB) -> {
+            final Either<RuleNotApplicable, RuleApplied> result = apply(playerA, playerB);
+
+            if(result.isLeft()) {
+                return nextRule.apply(playerA, playerB);
+            }
+            return result;
+        };
+    }
+
     Rules onePlayerWinsTheMatch = (playerA, playerB) -> {
         int playerAScore = playerA.getScore().getValue();
         int playerBScore = playerB.getScore().getValue();

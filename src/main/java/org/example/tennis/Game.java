@@ -3,11 +3,14 @@ package org.example.tennis;
 import io.vavr.control.Either;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
+import static io.vavr.API.$;
+import static io.vavr.API.Case;
+import static io.vavr.API.Match;
+import static io.vavr.Patterns.$Left;
+import static io.vavr.Patterns.$Right;
 import static org.example.tennis.Rules.bothPlayerHaveSameScore;
 import static org.example.tennis.Rules.defaultScoring;
 import static org.example.tennis.Rules.deuceInMatch;
@@ -21,17 +24,10 @@ import static org.example.tennis.Rules.onePlayerWinsTheMatch;
 public class Game {
     private final Player playerA;
     private final Player playerB;
-    private final List<Rules> rules = new ArrayList<>(5);
 
     private Game(Player playerA, Player playerB) {
         this.playerA = playerA;
         this.playerB = playerB;
-
-        rules.add(onePlayerWinsTheMatch);
-        rules.add(deuceInMatch);
-        rules.add(onePlayerHasAdvantage);
-        rules.add(bothPlayerHaveSameScore);
-        rules.add(defaultScoring);
     }
 
     public static Game startWith(Player playerA, Player playerB) {
@@ -41,21 +37,18 @@ public class Game {
     }
 
     public String result() {
-        Score playerAScore = playerA.getScore();
-        Score playerBScore = playerB.getScore();
+        final Rules rules = onePlayerWinsTheMatch.appendNext(deuceInMatch)
+                                                 .appendNext(onePlayerHasAdvantage)
+                                                 .appendNext(bothPlayerHaveSameScore)
+                                                 .appendNext(defaultScoring);
 
-        RuleEngine engine = RuleEngine.applyTo(this)
-                .first(onePlayerWinsTheMatch)
-                .next(deuceInMatch)
-                .next(onePlayerHasAdvantage)
-                .next(bothPlayerHaveSameScore)
-                .last(defaultScoring);
+        final Either<RuleNotApplicable, RuleApplied> result = rules.apply(playerA, playerB);
 
-
-
-        return "";
+        return Match(result).of(
+                Case($Left($()), ruleNotApplied -> "Could not determine result"),
+                Case($Right($()), RuleApplied::getResult)
+        );
     }
-
 
 
     public void apply(String playerAScores, String playerBScores) {
