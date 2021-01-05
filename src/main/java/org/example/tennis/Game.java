@@ -11,11 +11,6 @@ import static io.vavr.API.Case;
 import static io.vavr.API.Match;
 import static io.vavr.Patterns.$Left;
 import static io.vavr.Patterns.$Right;
-import static org.example.tennis.Rules.bothPlayerHaveSameScore;
-import static org.example.tennis.Rules.defaultScoring;
-import static org.example.tennis.Rules.deuceInMatch;
-import static org.example.tennis.Rules.onePlayerHasAdvantage;
-import static org.example.tennis.Rules.onePlayerWinsTheMatch;
 
 /**
  * @author <a href="kuldeepyadav7291@gmail.com">Kuldeep</a>
@@ -37,10 +32,7 @@ public class Game {
     }
 
     public String result() {
-        final Rules rules = onePlayerWinsTheMatch.appendNext(deuceInMatch)
-                                                 .appendNext(onePlayerHasAdvantage)
-                                                 .appendNext(bothPlayerHaveSameScore)
-                                                 .appendNext(defaultScoring);
+        final Rules rules = RulesProvider.provide();
 
         final Either<RuleNotApplicable, RuleApplied> result = rules.apply(playerA, playerB);
 
