@@ -37,7 +37,7 @@ public class Game {
         final Either<RuleNotApplicable, RuleApplied> result = rules.apply(playerA, playerB);
 
         return Match(result).of(
-                Case($Left($()), ruleNotApplied -> "Could not determine result"),
+                Case($Left($()), () -> "Could not determine result"),
                 Case($Right($()), RuleApplied::getResult)
         );
     }
